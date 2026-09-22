@@ -25,16 +25,16 @@ def run_cuf_experiment(df_features: pd.DataFrame) -> Dict[str, Any]:
     
     models = {
         "Logistic Regression": (
-            LogisticRegression(max_iter=1000, random_state=42),
-            LogisticRegression(max_iter=1000, random_state=42)
+            LogisticRegression(max_iter=200, random_state=42),
+            LogisticRegression(max_iter=200, random_state=42)
         ),
         "Random Forest": (
-            RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42),
-            RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42)
+            RandomForestClassifier(n_estimators=50, max_depth=6, random_state=42, n_jobs=-1),
+            RandomForestClassifier(n_estimators=50, max_depth=6, random_state=42, n_jobs=-1)
         ),
         "XGBoost": (
-            XGBClassifier(n_estimators=100, max_depth=5, learning_rate=0.05, random_state=42, eval_metric="logloss"),
-            XGBClassifier(n_estimators=100, max_depth=5, learning_rate=0.05, random_state=42, eval_metric="logloss")
+            XGBClassifier(n_estimators=50, max_depth=4, learning_rate=0.08, random_state=42, n_jobs=-1, eval_metric="logloss"),
+            XGBClassifier(n_estimators=50, max_depth=4, learning_rate=0.08, random_state=42, n_jobs=-1, eval_metric="logloss")
         )
     }
     

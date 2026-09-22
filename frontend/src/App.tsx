@@ -33,11 +33,24 @@ export const App: React.FC = () => {
   const [isConfigOpen, setIsConfigOpen] = useState<boolean>(false);
   const [isModelStatusOpen, setIsModelStatusOpen] = useState<boolean>(false);
 
+  // Loading & Error States
+  const [isLoadingOverview, setIsLoadingOverview] = useState<boolean>(true);
+  const [overviewError, setOverviewError] = useState<string | null>(null);
+
   const fetchOverviewData = () => {
+    setIsLoadingOverview(true);
+    setOverviewError(null);
     api
       .getExecutiveOverview()
-      .then((data) => setOverview(data))
-      .catch((err) => console.error(err));
+      .then((data) => {
+        setOverview(data);
+        setIsLoadingOverview(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        setOverviewError(err.message || 'Failed to connect to DRISHTI Backend Service.');
+        setIsLoadingOverview(false);
+      });
   };
 
   const fetchProjectsData = () => {
@@ -89,6 +102,9 @@ export const App: React.FC = () => {
             projects={projects}
             onSelectProject={(id) => setSelectedProjectId(id)}
             onNavigateTab={(tab) => setActiveTab(tab)}
+            isLoading={isLoadingOverview}
+            error={overviewError}
+            onRetry={fetchOverviewData}
           />
         )}
 

@@ -1,7 +1,9 @@
 import React from 'react';
 import {
   AlertTriangle,
-  ShieldAlert
+  ShieldAlert,
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
 import {
   BarChart,
@@ -21,6 +23,9 @@ interface ExecutiveOverviewProps {
   projects: Project[];
   onSelectProject: (projectId: string) => void;
   onNavigateTab: (tab: string) => void;
+  isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
 const SectorDelayTooltip = ({ active, payload }: any) => {
@@ -48,12 +53,40 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
   overview,
   projects,
   onSelectProject,
-  onNavigateTab
+  onNavigateTab,
+  isLoading,
+  error,
+  onRetry
 }) => {
-  if (!overview) {
+  if (isLoading || !overview) {
+    if (error) {
+      return (
+        <div className="bg-white border border-red-200 rounded-xl p-8 text-center shadow-sm max-w-md mx-auto my-12">
+          <div className="w-12 h-12 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertTriangle className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900 mb-1">Unable to Load Executive Data</h3>
+          <p className="text-xs text-slate-600 mb-6">{error}</p>
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold rounded-lg shadow transition-colors"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Retry Connection
+            </button>
+          )}
+        </div>
+      );
+    }
+
     return (
-      <div className="flex items-center justify-center p-12 text-slate-500 text-xs font-medium">
-        Loading DRISHTI Executive Portfolio Data...
+      <div className="flex flex-col items-center justify-center p-16 space-y-4 bg-white border border-slate-200 rounded-xl my-6 text-center shadow-sm">
+        <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
+        <div className="space-y-1">
+          <h4 className="text-sm font-bold text-slate-900">Loading DRISHTI Executive Portfolio Data...</h4>
+          <p className="text-xs text-slate-500">Initializing 1,981 Infrastructure Projects & Running Predictive ML Engine</p>
+        </div>
       </div>
     );
   }

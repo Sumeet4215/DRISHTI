@@ -109,10 +109,10 @@ class PaimanaMLEngine:
         
         # 1. Cost Overrun Models Comparison
         cost_models = {
-            "XGBoost": XGBClassifier(n_estimators=100, max_depth=5, learning_rate=0.05, random_state=42, eval_metric="logloss"),
-            "Random Forest": RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42),
+            "XGBoost": XGBClassifier(n_estimators=50, max_depth=4, learning_rate=0.08, random_state=42, n_jobs=-1, eval_metric="logloss"),
+            "Random Forest": RandomForestClassifier(n_estimators=50, max_depth=6, random_state=42, n_jobs=-1),
             "Decision Tree": DecisionTreeClassifier(max_depth=5, random_state=42),
-            "Logistic Regression": LogisticRegression(max_iter=1000, random_state=42)
+            "Logistic Regression": LogisticRegression(max_iter=200, random_state=42)
         }
         
         cost_results = {}
@@ -150,10 +150,10 @@ class PaimanaMLEngine:
                 
         # 2. Time Overrun Models Comparison
         time_models = {
-            "XGBoost": XGBClassifier(n_estimators=100, max_depth=5, learning_rate=0.05, random_state=42, eval_metric="logloss"),
-            "Random Forest": RandomForestClassifier(n_estimators=100, max_depth=8, random_state=42),
+            "XGBoost": XGBClassifier(n_estimators=50, max_depth=4, learning_rate=0.08, random_state=42, n_jobs=-1, eval_metric="logloss"),
+            "Random Forest": RandomForestClassifier(n_estimators=50, max_depth=6, random_state=42, n_jobs=-1),
             "Decision Tree": DecisionTreeClassifier(max_depth=5, random_state=42),
-            "Logistic Regression": LogisticRegression(max_iter=1000, random_state=42)
+            "Logistic Regression": LogisticRegression(max_iter=200, random_state=42)
         }
         
         time_results = {}
@@ -190,7 +190,7 @@ class PaimanaMLEngine:
                 self.time_model = model
                 
         # 3. Expected Delay Regressor
-        regressor = XGBRegressor(n_estimators=100, max_depth=5, learning_rate=0.05, random_state=42)
+        regressor = XGBRegressor(n_estimators=50, max_depth=4, learning_rate=0.08, random_state=42, n_jobs=-1)
         regressor.fit(X_train, y_dm_train)
         reg_preds = regressor.predict(X_test)
         mae = mean_absolute_error(y_dm_test, reg_preds)

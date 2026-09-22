@@ -68,52 +68,80 @@ def initialize_system(df: pd.DataFrame):
     # 3. Train ML Models
     metrics = ml_engine.train_models(df_feat)
     
-    # 4. Run Predictions & Risk Scoring for all projects
-    risk_scores = []
-    priorities = []
-    cost_probs = []
-    time_probs = []
-    delay_months = []
+    # 4. Vectorized Predictions & Risk Scoring for all projects
+    X = df_feat[ALL_FEATURE_COLS]
     
-    for idx, row in df_feat.iterrows():
-        feat_dict = {col: row[col] for col in ALL_FEATURE_COLS}
-        pred = ml_engine.predict_project(feat_dict)
+    if hasattr(ml_engine.cost_model, "predict_proba"):
+        cost_probs = np.round(ml_engine.cost_model.predict_proba(X)[:, 1] * 100.0, 1)
+    else:
+        cost_probs = np.round(ml_engine.cost_model.predict(X) * 100.0, 1)
         
-        c_prob = pred["cost_overrun_probability"]
-        t_prob = pred["time_overrun_probability"]
-        del_m = pred["expected_delay_months"]
+    if hasattr(ml_engine.time_model, "predict_proba"):
+        time_probs = np.round(ml_engine.time_model.predict_proba(X)[:, 1] * 100.0, 1)
+    else:
+        time_probs = np.round(ml_engine.time_model.predict(X) * 100.0, 1)
         
-        cost_probs.append(c_prob)
-        time_probs.append(t_prob)
-        delay_months.append(del_m)
+    delay_months = np.round(np.maximum(0.0, ml_engine.delay_duration_model.predict(X)), 1)
+    
+    # Vectorized Risk Score components
+    c_risk = cost_probs
+    s_risk = time_probs
+    
+    planned_dur = np.maximum(1.0, df_feat["planned_duration_months"].values)
+    proj_age = df_feat["project_age_months"].values
+    phys_pct = df_feat["physical_progress_pct"].values
+    fin_pct = df_feat["financial_progress_pct"].values
+    ms_delay_rate = df_feat["milestone_delay_rate"].values
+    
+    expected_progress = np.minimum(100.0, (proj_age / planned_dur) * 100.0)
+    progress_gap = np.maximum(0.0, expected_progress - phys_pct)
+    p_risk = np.minimum(100.0, progress_gap * 1.5)
+    
+    mismatch_gap = np.maximum(0.0, fin_pct - phys_pct)
+    m_risk = np.minimum(100.0, mismatch_gap * 2.5)
+    
+    ms_risk = np.minimum(100.0, ms_delay_rate * 100.0)
+    
+    w_cost = risk_engine.weights.get("cost_risk", 0.25)
+    w_sched = risk_engine.weights.get("schedule_risk", 0.25)
+    w_prog = risk_engine.weights.get("progress_risk", 0.20)
+    w_mismatch = risk_engine.weights.get("mismatch_risk", 0.15)
+    w_ms = risk_engine.weights.get("milestone_risk", 0.15)
+    
+    raw_overall = (
+        (c_risk * w_cost) +
+        (s_risk * w_sched) +
+        (p_risk * w_prog) +
+        (m_risk * w_mismatch) +
+        (ms_risk * w_ms)
+    )
+    
+    risk_scores = np.round(np.clip(raw_overall, 0.0, 100.0), 1).tolist()
+    
+    rev_cost = df_feat["revised_cost"].values if "revised_cost" in df_feat.columns else df_feat["original_cost"].values
+    
+    priorities = []
+    for sc, rev in zip(risk_scores, rev_cost):
+        if sc >= 75.0 or (sc >= 65.0 and rev > 2000.0):
+            priorities.append("P1")
+        elif sc >= 50.0 or (sc >= 40.0 and rev > 1000.0):
+            priorities.append("P2")
+        elif sc >= 25.0:
+            priorities.append("P3")
+        else:
+            priorities.append("P4")
         
-        risk_res = risk_engine.calculate_project_risk(
-            cost_overrun_prob=c_prob,
-            time_overrun_prob=t_prob,
-            physical_progress_pct=row["physical_progress_pct"],
-            financial_progress_pct=row["financial_progress_pct"],
-            planned_duration_months=row["planned_duration_months"],
-            project_age_months=row["project_age_months"],
-            milestone_delay_rate=row["milestone_delay_rate"],
-            land_acquired_pct=row.get("land_acquired_pct", 80.0),
-            contractor_rating=row.get("contractor_rating", 3.5)
-        )
-        
-        risk_scores.append(risk_res["overall_risk_score"])
-        ew = generate_early_warnings_and_recommendations(row.to_dict(), risk_res, pred)
-        priorities.append(ew["priority_level"])
-        
-    df_feat["cost_overrun_prob"] = cost_probs
-    df_feat["time_overrun_prob"] = time_probs
-    df_feat["expected_delay_months"] = delay_months
+    df_feat["cost_overrun_prob"] = cost_probs.tolist()
+    df_feat["time_overrun_prob"] = time_probs.tolist()
+    df_feat["expected_delay_months"] = delay_months.tolist()
     df_feat["overall_risk_score"] = risk_scores
     df_feat["priority_level"] = priorities
     
     df["overall_risk_score"] = risk_scores
     df["priority_level"] = priorities
-    df["cost_overrun_prob"] = cost_probs
-    df["time_overrun_prob"] = time_probs
-    df["expected_delay_months"] = delay_months
+    df["cost_overrun_prob"] = cost_probs.tolist()
+    df["time_overrun_prob"] = time_probs.tolist()
+    df["expected_delay_months"] = delay_months.tolist()
     
     # 5. Run CUF Experiment
     cuf_res = run_cuf_experiment(df_feat)
@@ -377,25 +405,52 @@ class ConfigRequest(BaseModel):
 def update_config(req: ConfigRequest):
     risk_engine.update_config(weights=req.weights, thresholds=req.thresholds)
     df_feat = state["featured_df"]
-    risk_scores = []
-    priorities = []
     
-    for idx, row in df_feat.iterrows():
-        c_prob = row["cost_overrun_prob"]
-        t_prob = row["time_overrun_prob"]
-        risk_res = risk_engine.calculate_project_risk(
-            cost_overrun_prob=c_prob,
-            time_overrun_prob=t_prob,
-            physical_progress_pct=row["physical_progress_pct"],
-            financial_progress_pct=row["financial_progress_pct"],
-            planned_duration_months=row["planned_duration_months"],
-            project_age_months=row["project_age_months"],
-            milestone_delay_rate=row["milestone_delay_rate"]
-        )
-        risk_scores.append(risk_res["overall_risk_score"])
-        pred_dict = {"cost_overrun_probability": c_prob, "time_overrun_probability": t_prob, "expected_delay_months": row["expected_delay_months"]}
-        ew = generate_early_warnings_and_recommendations(row.to_dict(), risk_res, pred_dict)
-        priorities.append(ew["priority_level"])
+    cost_probs = np.array(df_feat["cost_overrun_prob"].values)
+    time_probs = np.array(df_feat["time_overrun_prob"].values)
+    planned_dur = np.maximum(1.0, df_feat["planned_duration_months"].values)
+    proj_age = df_feat["project_age_months"].values
+    phys_pct = df_feat["physical_progress_pct"].values
+    fin_pct = df_feat["financial_progress_pct"].values
+    ms_delay_rate = df_feat["milestone_delay_rate"].values
+    
+    expected_progress = np.minimum(100.0, (proj_age / planned_dur) * 100.0)
+    progress_gap = np.maximum(0.0, expected_progress - phys_pct)
+    p_risk = np.minimum(100.0, progress_gap * 1.5)
+    
+    mismatch_gap = np.maximum(0.0, fin_pct - phys_pct)
+    m_risk = np.minimum(100.0, mismatch_gap * 2.5)
+    
+    ms_risk = np.minimum(100.0, ms_delay_rate * 100.0)
+    
+    w_cost = risk_engine.weights.get("cost_risk", 0.25)
+    w_sched = risk_engine.weights.get("schedule_risk", 0.25)
+    w_prog = risk_engine.weights.get("progress_risk", 0.20)
+    w_mismatch = risk_engine.weights.get("mismatch_risk", 0.15)
+    w_ms = risk_engine.weights.get("milestone_risk", 0.15)
+    
+    raw_overall = (
+        (cost_probs * w_cost) +
+        (time_probs * w_sched) +
+        (p_risk * w_prog) +
+        (m_risk * w_mismatch) +
+        (ms_risk * w_ms)
+    )
+    
+    risk_scores = np.round(np.clip(raw_overall, 0.0, 100.0), 1).tolist()
+    
+    rev_cost = df_feat["revised_cost"].values if "revised_cost" in df_feat.columns else df_feat["original_cost"].values
+    
+    priorities = []
+    for sc, rev in zip(risk_scores, rev_cost):
+        if sc >= 75.0 or (sc >= 65.0 and rev > 2000.0):
+            priorities.append("P1")
+        elif sc >= 50.0 or (sc >= 40.0 and rev > 1000.0):
+            priorities.append("P2")
+        elif sc >= 25.0:
+            priorities.append("P3")
+        else:
+            priorities.append("P4")
         
     df_feat["overall_risk_score"] = risk_scores
     df_feat["priority_level"] = priorities
