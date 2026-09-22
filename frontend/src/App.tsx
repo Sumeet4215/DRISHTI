@@ -74,7 +74,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col">
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -131,7 +131,7 @@ export const App: React.FC = () => {
         {activeTab === 'assistant' && <AIAssistant />}
       </main>
 
-      <footer className="bg-slate-900 border-t border-slate-800 text-slate-500 py-4 text-center text-xs">
+      <footer className="bg-white border-t border-slate-200 text-slate-500 py-4 text-center text-xs font-medium">
         DRISHTI — Infrastructure Project Intelligence & Early Warning System • Ministry of Statistics and Programme Implementation (MoSPI) • SIH26103
       </footer>
 

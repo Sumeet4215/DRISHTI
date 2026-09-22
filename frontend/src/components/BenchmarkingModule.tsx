@@ -17,24 +17,24 @@ export const BenchmarkingModule: React.FC<BenchmarkingModuleProps> = ({ overview
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <Compass className="w-5 h-5 text-teal-400" />
+          <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+            <Compass className="w-5 h-5 text-teal-700" />
             <span>Peer Sector & Project Scale Benchmarking Engine</span>
           </h2>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Comparative performance metrics against national cohort medians across 22 Central Sector infrastructure categories.
           </p>
         </div>
 
         {/* Sector Selector */}
         <div className="flex items-center gap-2">
-          <label className="text-xs text-slate-400 font-semibold">Select Sector Cohort:</label>
+          <label className="text-xs text-slate-600 font-semibold">Select Sector Cohort:</label>
           <select
             value={selectedSector}
             onChange={(e) => setSelectedSector(e.target.value)}
-            className="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg text-xs text-white focus:outline-none focus:border-teal-500 font-semibold"
+            className="px-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 focus:outline-none focus:border-teal-600 font-semibold"
           >
             {sectors.map((s) => (
               <option key={s.sector} value={s.sector}>
@@ -47,25 +47,25 @@ export const BenchmarkingModule: React.FC<BenchmarkingModuleProps> = ({ overview
 
       {/* Cohort KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg">
-          <div className="text-[10px] text-slate-400 uppercase font-semibold">Cohort Monitored Projects</div>
-          <div className="text-2xl font-black text-white mt-1">{currentSectorData.project_count}</div>
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <div className="text-[10px] text-slate-500 uppercase font-semibold">Cohort Monitored Projects</div>
+          <div className="text-2xl font-black text-slate-900 mt-1">{currentSectorData.project_count}</div>
           <div className="text-[10px] text-slate-500 mt-1">Central Sector Portfolio</div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg">
-          <div className="text-[10px] text-slate-400 uppercase font-semibold">Cohort Total Sanction Cost</div>
-          <div className="text-2xl font-black text-teal-400 mt-1">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <div className="text-[10px] text-slate-500 uppercase font-semibold">Cohort Total Sanction Cost</div>
+          <div className="text-2xl font-black text-teal-700 mt-1">
             ₹{(currentSectorData.original_cost ?? 0).toLocaleString()} Cr
           </div>
-          <div className="text-[10px] text-teal-500 font-semibold mt-1">
+          <div className="text-[10px] text-teal-700 font-semibold mt-1">
             Revised: ₹{(currentSectorData.revised_cost ?? 0).toLocaleString()} Cr
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg">
-          <div className="text-[10px] text-slate-400 uppercase font-semibold">Cohort Avg Cost Escalation</div>
-          <div className="text-2xl font-black text-red-400 mt-1">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <div className="text-[10px] text-slate-500 uppercase font-semibold">Cohort Avg Cost Escalation</div>
+          <div className="text-2xl font-black text-red-700 mt-1">
             +{(
               (((currentSectorData.revised_cost ?? 0) - (currentSectorData.original_cost ?? 0)) /
                 Math.max(1, currentSectorData.original_cost ?? 1)) *
@@ -75,9 +75,9 @@ export const BenchmarkingModule: React.FC<BenchmarkingModuleProps> = ({ overview
           <div className="text-[10px] text-slate-500 mt-1">Aggregate Cost Variance</div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg">
-          <div className="text-[10px] text-slate-400 uppercase font-semibold">Cohort Avg Risk Score</div>
-          <div className="text-2xl font-black text-amber-400 mt-1">
+        <div className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm">
+          <div className="text-[10px] text-slate-500 uppercase font-semibold">Cohort Avg Risk Score</div>
+          <div className="text-2xl font-black text-amber-700 mt-1">
             {currentSectorData.overall_risk_score ?? 50}/100
           </div>
           <div className="text-[10px] text-slate-500 mt-1">Normalized Risk Index</div>
@@ -85,16 +85,16 @@ export const BenchmarkingModule: React.FC<BenchmarkingModuleProps> = ({ overview
       </div>
 
       {/* Peer Sector Benchmarking Grid */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
-        <h3 className="text-sm font-bold text-white flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-emerald-400" />
+      <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-4">
+        <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <TrendingUp className="w-4 h-4 text-teal-700" />
           <span>Cross-Sector Performance Benchmark Table</span>
         </h3>
 
         <div className="overflow-x-auto scrollbar-thin">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="bg-slate-950 text-slate-400 border-b border-slate-800">
+              <tr className="bg-slate-50 text-slate-700 border-b border-slate-200 font-semibold">
                 <th className="py-2.5 px-3">Sector Name</th>
                 <th className="py-2.5 px-3 text-center">Projects</th>
                 <th className="py-2.5 px-3 text-right">Sanction Cost (Cr)</th>
@@ -104,7 +104,7 @@ export const BenchmarkingModule: React.FC<BenchmarkingModuleProps> = ({ overview
                 <th className="py-2.5 px-3 text-center">Benchmark Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-200">
               {sectors.map((sec) => {
                 const origCost = sec.original_cost ?? 0;
                 const revCost = sec.revised_cost ?? 0;
@@ -116,19 +116,19 @@ export const BenchmarkingModule: React.FC<BenchmarkingModuleProps> = ({ overview
                     key={sec.sector}
                     onClick={() => setSelectedSector(sec.sector)}
                     className={`cursor-pointer transition ${
-                      isSelected ? 'bg-teal-950/40 border-l-4 border-l-teal-500' : 'hover:bg-slate-800/40'
+                      isSelected ? 'bg-teal-50/70 border-l-4 border-l-teal-600' : 'hover:bg-slate-50'
                     }`}
                   >
-                    <td className="py-2.5 px-3 font-semibold text-slate-200">{sec.sector}</td>
-                    <td className="py-2.5 px-3 text-center font-mono text-slate-300">{sec.project_count}</td>
-                    <td className="py-2.5 px-3 text-right font-mono text-slate-300">
+                    <td className="py-2.5 px-3 font-semibold text-slate-900">{sec.sector}</td>
+                    <td className="py-2.5 px-3 text-center font-mono text-slate-600">{sec.project_count}</td>
+                    <td className="py-2.5 px-3 text-right font-mono text-slate-600">
                       ₹{origCost.toLocaleString()}
                     </td>
-                    <td className="py-2.5 px-3 text-right font-mono text-slate-200 font-bold">
+                    <td className="py-2.5 px-3 text-right font-mono text-slate-900 font-bold">
                       ₹{revCost.toLocaleString()}
                     </td>
                     <td className="py-2.5 px-3 text-center font-mono">
-                      <span className={escalation > 20 ? 'text-red-400 font-bold' : 'text-amber-400'}>
+                      <span className={escalation > 20 ? 'text-red-700 font-bold' : 'text-amber-700 font-semibold'}>
                         +{escalation.toFixed(1)}%
                       </span>
                     </td>
@@ -136,10 +136,10 @@ export const BenchmarkingModule: React.FC<BenchmarkingModuleProps> = ({ overview
                       <span
                         className={`px-2 py-0.5 rounded font-extrabold text-[11px] ${
                           riskScore >= 70
-                            ? 'bg-red-950 text-red-400 border border-red-800'
+                            ? 'bg-red-50 text-red-700 border border-red-200'
                             : riskScore >= 45
-                            ? 'bg-orange-950 text-orange-400 border border-orange-800'
-                            : 'bg-emerald-950 text-emerald-400 border border-emerald-800'
+                            ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                            : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}
                       >
                         {riskScore}/100
@@ -147,15 +147,15 @@ export const BenchmarkingModule: React.FC<BenchmarkingModuleProps> = ({ overview
                     </td>
                     <td className="py-2.5 px-3 text-center">
                       {riskScore < 45 ? (
-                        <span className="text-[10px] text-emerald-400 font-semibold flex items-center justify-center gap-1">
+                        <span className="text-[10px] text-emerald-700 font-semibold flex items-center justify-center gap-1">
                           <Award className="w-3 h-3" /> Outperforming
                         </span>
                       ) : riskScore >= 70 ? (
-                        <span className="text-[10px] text-red-400 font-semibold flex items-center justify-center gap-1">
+                        <span className="text-[10px] text-red-700 font-semibold flex items-center justify-center gap-1">
                           <ShieldAlert className="w-3 h-3" /> Underperforming
                         </span>
                       ) : (
-                        <span className="text-[10px] text-slate-400">At Peer Median</span>
+                        <span className="text-[10px] text-slate-500">At Peer Median</span>
                       )}
                     </td>
                   </tr>
